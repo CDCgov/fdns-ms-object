@@ -1,11 +1,97 @@
-# fdns-ms-object
-This is the repository with the Object layer for the Data Lake. This is the mutable layer.
+# FDNS Object Microservice
+This repository contains the Object layer for the Data Lake. This is the mutable layer of the data lake.
 
-## ----- Start of respository specific READ ME -----
-### This repository specific READ ME instructions go here
+## Running locally
+Please read the following instructions carefully for information on how to build, run and test this microservice in your local environment.
 
-Replace everything within this section demarcated with “-----“ with material appropriate to your repo that is useful to your developers and users like installation steps, user guide etc.
-## ----- End of respository specific READ ME -----
+### Before you start
+You will need to have the following installed before getting up and running locally:
+
+- Docker, [Installation guides](https://docs.docker.com/install/)
+- Docker Compose, [Installation guides](https://docs.docker.com/compose/install/)
+- **Windows Users**: This project uses `Make`, please see [Cygwin](http://www.cygwin.com/) for running commands in this README
+
+### Build
+
+First you'll need to build the image, to do so just run the following command:
+
+```
+make docker-build
+```
+
+### Run
+
+Now you'll be able to run the image, you can easily do so by running the following command:
+
+```
+make docker-run
+```
+
+### Test
+
+To check if the microservice is running, just open the following URL in your browser:
+
+[http://127.0.0.1:8083/](http://127.0.0.1:8083/)
+
+### Documentation
+
+To access the Swagger documentation, just open the following URL in your browser:
+
+[http://127.0.0.1:8083/swagger-ui.html](http://127.0.0.1:8083/swagger-ui.html)
+
+### MongoDB Configuration
+
+First, you need to configure these environment variables using Docker or the STS Launch Configuration:
+
+* `OBJECT_MONGO_HOST`: This is the host for your MongoDB server
+* `OBJECT_MONGO_PORT`: This is the port for your MongoDB server
+* `OBJECT_MONGO_USER_DATABASE`: Contains where the user name and password are stored in MongoDB, by default it's `admin`
+* `OBJECT_MONGO_USERNAME`: The user name that you want to use to authenticate
+* `OBJECT_MONGO_PASSWORD`: The password that you want to use to authenticate
+
+Be sure, that you have properly configured your MongoDB server. If you use the `docker-compose.yml` file in this project, after starting Mongo, you need to:
+
+* Login to the MongoDB server (in this case, we connect to the `admin` database):
+
+```
+docker exec -it fdns-ms-object_mongo_1 mongo admin
+```
+
+* And create the user:
+
+```
+db.createUser({ user: 'admin', pwd: 'admin', roles: [ { role: "userAdminAnyDatabase", db: "admin" } ] });
+```
+
+* Exit the console, by typing:
+
+```
+exit
+```
+
+### OAuth 2 Configuration
+
+This microservice is configurable to be secured with an OAuth 2 provider.
+
+__Scopes__: This application uses the following scope: `object.database.collection`
+
+Please see the following environment variables for configuring with your OAuth 2 provider:
+
+* `OAUTH2_ACCESS_TOKEN_URI`: This is the introspection URL of your provider, ex: `https://hydra:4444/oauth2/introspect`
+* `OAUTH2_PROTECTED_URIS`: This is a path for which routes are to be restricted, ex: `/api/1.0/**`
+* `OAUTH2_CLIENT_ID`: This is your OAuth 2 client id with the provider
+* `OAUTH2_CLIENT_SECRET`: This is your OAuth 2 client secret with the provider
+* `SSL_VERIFYING_DISABLE`: This is an option to disable SSL verification, you can disable this when testing locally but this should be set to `false` for all production systems
+
+### Miscellaneous Configurations
+
+Here are other various configurations and their purposes:
+
+* `OBJECT_PORT`: This is a configurable port the application is set to run on
+* `OBJECT_FLUENTD_HOST`: This is the host of your [Fluentd](https://www.fluentd.org/)
+* `OBJECT_FLUENTD_PORT`: This is the port of your [Fluentd](https://www.fluentd.org/)
+* `OBJECT_PROXY_HOSTNAME`: This is the hostname of your environment for use with Swagger UI, ex: `api.my.org`
+* `OBJECT_IMMUTABLE`: This is a `;` separated list of collections which are immutable collections
   
 ## Public Domain
 This repository constitutes a work of the United States Government and is not

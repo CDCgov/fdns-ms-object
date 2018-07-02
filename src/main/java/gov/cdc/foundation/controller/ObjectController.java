@@ -42,6 +42,7 @@ import com.mongodb.client.result.DeleteResult;
 import gov.cdc.foundation.helper.LoggerHelper;
 import gov.cdc.foundation.helper.MessageHelper;
 import gov.cdc.foundation.helper.ResourceHelper;
+import gov.cdc.foundation.helper.QueryHelper;
 import gov.cdc.helper.ErrorHandler;
 import gov.cdc.helper.common.ServiceException;
 import io.swagger.annotations.ApiOperation;
@@ -372,6 +373,41 @@ public class ObjectController {
 			return ErrorHandler.getInstance().handle(e, log);
 		}
 	}
+	
+	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
+	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}/search", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ApiOperation(value = "Search object(s)", notes = "Search object(s)")
+	@ResponseBody
+	public ResponseEntity<?> search(
+			@ApiParam(value = "Database name") @PathVariable(value = "db") String db,
+			@ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection,
+			@ApiParam(value = "Search query") @RequestParam(value = "qs", defaultValue = "") String qs,
+			@ApiParam(value = "Set the starting point of the result set") @RequestParam(value = "from", defaultValue = "0") int from,
+			@ApiParam(value = "Limit the number of objects to return") @RequestParam(value = "size", defaultValue = "-1") int size,
+			@ApiParam(value = "Field used to order the result set") @RequestParam(value = "sort", required = false) String sort,
+			@ApiParam(value = "Ascending/descending order") @RequestParam(value = "order", defaultValue = "1") int order
+		) {
+
+		Map<String, Object> log = MessageHelper.initializeLog(MessageHelper.METHOD_SEARCH, db, collection);
+		ObjectMapper mapper = new ObjectMapper();
+
+		try {
+			if (collection == null || collection.length() == 0)
+				throw new ServiceException(MessageHelper.ERROR_COLLECTION_REQUIRED);
+
+			MongoCollection<Document> coll = ResourceHelper.getDB(db).getCollection(collection);
+			Document query = QueryHelper.buildQuery(qs);
+
+			Object json = executeQuery(coll, query, from, size, sort, order);
+
+			return new ResponseEntity<>(mapper.readTree(json.toString()), HttpStatus.OK);
+		} catch (Exception e) {
+			logger.error(e);
+			LoggerHelper.log(MessageHelper.METHOD_QUERY, log);
+			
+			return ErrorHandler.getInstance().handle(e, log);
+		}
+	}
 
 	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
 	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}/find", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -383,7 +419,6 @@ public class ObjectController {
 		ObjectMapper mapper = new ObjectMapper();
 
 		try {
-
 			if (collection == null || collection.length() == 0)
 				throw new ServiceException(MessageHelper.ERROR_COLLECTION_REQUIRED);
 			if (payload == null || payload.length() == 0)

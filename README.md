@@ -54,7 +54,7 @@ Be sure, that you have properly configured your MongoDB server. If you use the `
 * Login to the MongoDB server (in this case, we connect to the `admin` database):
 
 ```
-docker exec -it fdns-ms-object_mongo_1 mongo admin
+docker exec -it fdnsmsobject_mongo_1 mongo admin
 ```
 
 * And create the user:

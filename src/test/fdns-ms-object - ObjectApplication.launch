@@ -8,6 +8,7 @@
 <listEntry value="1"/>
 </listAttribute>
 <mapAttribute key="org.eclipse.debug.core.environmentVariables">
+<mapEntry key="ERROR_INCLUDE_TRACE" value="true"/>
 <mapEntry key="OAUTH2_ACCESS_TOKEN_URI" value=""/>
 <mapEntry key="OAUTH2_CLIENT_ID" value=""/>
 <mapEntry key="OAUTH2_CLIENT_SECRET" value=""/>
@@ -25,6 +26,7 @@
 <mapEntry key="SSL_VERIFYING_DISABLE" value="true"/>
 </mapAttribute>
 <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
+<stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.springframework.ide.eclipse.boot.launch.BootMavenClassPathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="gov.cdc.foundation.ObjectApplication"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="fdns-ms-object"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.springframework.ide.eclipse.boot.launch.BootMavenSourcePathProvider"/>

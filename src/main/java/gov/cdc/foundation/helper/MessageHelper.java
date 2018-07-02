@@ -20,6 +20,7 @@ public class MessageHelper extends AbstractMessageHelper {
 	public static final String METHOD_DELETEOBJECT = "deleteObject";
 	public static final String METHOD_DELETECOLLECTION = "deleteCollection";
 	public static final String METHOD_QUERY = "query";
+	public static final String METHOD_SEARCH = "search";
 	public static final String METHOD_AGGREGATE = "aggregate";
 	public static final String METHOD_COUNT = "count";
 	public static final String METHOD_DISTINCT = "distinct";
@@ -28,6 +29,7 @@ public class MessageHelper extends AbstractMessageHelper {
 	public static final String ERROR_COLLECTION_REQUIRED = "The parameter collection is required.";
 	public static final String ERROR_FIELD_REQUIRED = "The parameter field is required.";
 	public static final String ERROR_PAYLOAD_REQUIRED = "The parameter payload is required.";
+	public static final String ERROR_QUERYSTRING_REQUIRED = "The parameter qs is required.";
 
 	private MessageHelper() {
 		throw new IllegalAccessError("Helper class");

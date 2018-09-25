@@ -3,7 +3,6 @@ package gov.cdc.foundation;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.bson.Document;
-import org.json.JSONObject;
 import org.json.JSONException;
 import org.junit.Test;
 

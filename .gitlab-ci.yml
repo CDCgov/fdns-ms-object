@@ -22,8 +22,11 @@ build:
     - make docker-build
     - docker tag $CI_PROJECT_NAME:$CI_COMMIT_SHA $REPOSITORY_URL/$CI_PROJECT_NAME:$CI_COMMIT_SHA
     - docker tag $CI_PROJECT_NAME:$CI_COMMIT_SHA $REPOSITORY_URL/$CI_PROJECT_NAME:latest
+    - docker tag $CI_PROJECT_NAME:$CI_COMMIT_SHA $DOCKER_ORG/$CI_PROJECT_NAME:latest
     - docker push $REPOSITORY_URL/$CI_PROJECT_NAME:$CI_COMMIT_SHA
     - docker push $REPOSITORY_URL/$CI_PROJECT_NAME:latest
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    - docker push $DOCKER_ORG/$CI_PROJECT_NAME:latest
 
 deploy:
   stage: deploy

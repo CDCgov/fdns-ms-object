@@ -20,9 +20,9 @@ build:
   script:
     - $(aws ecr get-login --no-include-email --region us-east-1)
     - make docker-build
-    - docker tag $CI_PROJECT_NAME:$CI_COMMIT_SHA $REPOSITORY_URL/$CI_PROJECT_NAME:$CI_COMMIT_SHA
-    - docker tag $CI_PROJECT_NAME:$CI_COMMIT_SHA $REPOSITORY_URL/$CI_PROJECT_NAME:latest
-    - docker tag $CI_PROJECT_NAME:$CI_COMMIT_SHA $DOCKER_ORG/$CI_PROJECT_NAME:latest
+    - docker tag $CI_PROJECT_NAME $REPOSITORY_URL/$CI_PROJECT_NAME:$CI_COMMIT_SHA
+    - docker tag $CI_PROJECT_NAME $REPOSITORY_URL/$CI_PROJECT_NAME:latest
+    - docker tag $CI_PROJECT_NAME $DOCKER_ORG/$CI_PROJECT_NAME:latest
     - docker push $REPOSITORY_URL/$CI_PROJECT_NAME:$CI_COMMIT_SHA
     - docker push $REPOSITORY_URL/$CI_PROJECT_NAME:latest
     - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin

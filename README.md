@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/CDCgov/fdns-ms-object.svg?branch=master)](https://travis-ci.org/CDCgov/fdns-ms-object)
+
 # FDNS Object Microservice
 This repository contains the Object layer for the Data Lake. This is the mutable layer of the data lake.
 

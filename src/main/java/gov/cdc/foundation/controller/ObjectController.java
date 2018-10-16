@@ -53,7 +53,7 @@ import io.swagger.annotations.ApiParam;
 public class ObjectController {
 
 	private static final Logger logger = Logger.getLogger(ObjectController.class);
-	
+
 	@Value("${version}")
 	private String version;
 
@@ -62,14 +62,14 @@ public class ObjectController {
 
 	public ObjectController() {
 	}
-	
+
 	@RequestMapping(method = RequestMethod.GET)
 	@ResponseBody
 	public ResponseEntity<?> index() throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
-		
+
 		Map<String, Object> log = new HashMap<>();
-		
+
 		try {
 			JSONObject json = new JSONObject();
 			json.put("version", version);
@@ -77,7 +77,7 @@ public class ObjectController {
 		} catch (Exception e) {
 			logger.error(e);
 			LoggerHelper.log(MessageHelper.METHOD_INDEX, log);
-			
+
 			return ErrorHandler.getInstance().handle(e, log);
 		}
 	}
@@ -111,7 +111,7 @@ public class ObjectController {
 		} catch (Exception e) {
 			logger.error(e);
 			LoggerHelper.log(MessageHelper.METHOD_GETOBJECT, log);
-			
+
 			return ErrorHandler.getInstance().handle(e, log);
 		}
 	}
@@ -134,11 +134,42 @@ public class ObjectController {
 		} catch (Exception e) {
 			logger.error(e);
 			LoggerHelper.log(MessageHelper.METHOD_CREATEOBJECT, log);
-			
+
 			return ErrorHandler.getInstance().handle(e, log);
 		}
 	}
-	
+
+	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection)) or (#db == 'settings')")
+	@RequestMapping(method = RequestMethod.GET, value = "/{db}/{collection}/", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ApiOperation(value = "Get all objects in a collection", notes = "Get all objects in a collection")
+	@ResponseBody
+	public ResponseEntity<?> getCollection(@ApiParam(value = "Database name") @PathVariable(value = "db") String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection) {
+
+		Map<String, Object> log = MessageHelper.initializeLog(MessageHelper.METHOD_GETCOLLECTION, db, collection);
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		try {
+			if (collection == null || collection.length() == 0)
+				throw new ServiceException(MessageHelper.ERROR_COLLECTION_REQUIRED);
+
+			MongoCollection<Document> coll = ResourceHelper.getDB(db).getCollection(collection);
+			FindIterable<Document> results = coll.find();
+			Document query = QueryHelper.buildQuery("");
+			Object json = executeQuery(coll, query, 0, -1, "sort", 1);
+
+			if (results.iterator().hasNext())
+				return new ResponseEntity<>(mapper.readTree(json.toString()), HttpStatus.OK);
+			else
+				throw new ServiceException("The collection, " + collection + ", does not exist.");
+		} catch (Exception e) {
+			logger.error(e);
+			LoggerHelper.log(MessageHelper.METHOD_GETCOLLECTION, log);
+
+			return ErrorHandler.getInstance().handle(e, log);
+		}
+	}
+
 	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection)) or (#db == 'settings')")
 	@RequestMapping(method = RequestMethod.POST, value = "/multi/{db}/{collection}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Create a list of objects", notes = "Create a list of objects")
@@ -158,7 +189,7 @@ public class ObjectController {
 				documents.add(Document.parse(item.toString()));
 			}
 			coll.insertMany(documents);
-			
+
 			// Build the JSON output
 			JSONObject out = new JSONObject();
 			out.put("inserted", documents.size());
@@ -167,16 +198,16 @@ public class ObjectController {
 				elementIds.put(document.getObjectId("_id"));
 			}
 			out.put("ids", elementIds);
-			
+
 			return new ResponseEntity<>(mapper.readTree(out.toString()), HttpStatus.CREATED);
 		} catch (Exception e) {
 			logger.error(e);
 			LoggerHelper.log(MessageHelper.METHOD_CREATEOBJECTS, log);
-			
+
 			return ErrorHandler.getInstance().handle(e, log);
 		}
 	}
-	
+
 	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
 	@RequestMapping(method = RequestMethod.POST, value = "/bulk/{db}/{collection}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Bulk import of objects from a CSV file", notes = "Bulk import of objects from a CSV file")
@@ -192,20 +223,20 @@ public class ObjectController {
 			List<Document> documents = new ArrayList<>();
 			List<String> headers = new ArrayList<>();
 			CSVParser parser = null;
-			
+
 			// Resources should be closed
 			try {
 				parser = CSVParser.parse(IOUtils.toString(csvFile.getInputStream()), CSVFormat.valueOf(csvFormat));
 			}  catch (Exception e) {
 				logger.error(e);
 				LoggerHelper.log(MessageHelper.METHOD_BULKIMPORT, log);
-				
+
 				return ErrorHandler.getInstance().handle(e, log);
 			} finally {
 				if (parser != null)
 					parser.close();
 			}
-			
+
 			for (CSVRecord csvRecord : parser) {
 				if (headers.isEmpty()) {
 					for (int i = 0; i < csvRecord.size(); i++)
@@ -220,9 +251,9 @@ public class ObjectController {
 					documents.add(doc);
 				}
 			}
-			
+
 			coll.insertMany(documents);
-			
+
 			// Build the JSON output
 			JSONObject out = new JSONObject();
 			out.put("inserted", documents.size());
@@ -231,12 +262,12 @@ public class ObjectController {
 				elementIds.put(document.getObjectId("_id"));
 			}
 			out.put("ids", elementIds);
-			
+
 			return new ResponseEntity<>(mapper.readTree(out.toString()), HttpStatus.CREATED);
 		} catch (Exception e) {
 			logger.error(e);
 			LoggerHelper.log(MessageHelper.METHOD_BULKIMPORT, log);
-			
+
 			return ErrorHandler.getInstance().handle(e, log);
 		}
 	}
@@ -267,7 +298,7 @@ public class ObjectController {
 		} catch (Exception e) {
 			logger.error(e);
 			LoggerHelper.log(MessageHelper.METHOD_CREATEOBJECT, log);
-			
+
 			return ErrorHandler.getInstance().handle(e, log);
 		}
 	}
@@ -302,7 +333,7 @@ public class ObjectController {
 		} catch (Exception e) {
 			logger.error(e);
 			LoggerHelper.log(MessageHelper.METHOD_UPDATEOBJECT, log);
-			
+
 			return ErrorHandler.getInstance().handle(e, log);
 		}
 	}
@@ -338,7 +369,7 @@ public class ObjectController {
 		} catch (Exception e) {
 			logger.error(e);
 			LoggerHelper.log(MessageHelper.METHOD_DELETEOBJECT, log);
-			
+
 			return ErrorHandler.getInstance().handle(e, log);
 		}
 	}
@@ -369,11 +400,11 @@ public class ObjectController {
 		} catch (Exception e) {
 			logger.error(e);
 			LoggerHelper.log(MessageHelper.METHOD_DELETECOLLECTION, log);
-			
+
 			return ErrorHandler.getInstance().handle(e, log);
 		}
 	}
-	
+
 	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
 	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}/search", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Search object(s)", notes = "Search object(s)")
@@ -403,7 +434,7 @@ public class ObjectController {
 		} catch (Exception e) {
 			logger.error(e);
 			LoggerHelper.log(MessageHelper.METHOD_QUERY, log);
-			
+
 			return ErrorHandler.getInstance().handle(e, log);
 		}
 	}
@@ -413,12 +444,12 @@ public class ObjectController {
 	@ApiOperation(value = "Find object(s)", notes = "Find object(s)")
 	@ResponseBody
 	public ResponseEntity<?> query(
-		@RequestBody String payload, 
-		@ApiParam(value = "Database name") @PathVariable(value = "db") String db, 
-		@ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection, 
-		@ApiParam(value = "Set the starting point of the result set") @RequestParam(value = "from", defaultValue = "0") int from, 
-		@ApiParam(value = "Limit the number of objects to return") @RequestParam(value = "size", defaultValue = "-1") int size, 
-		@ApiParam(value = "Field used to order the result set") @RequestParam(value = "sort", required = false) String sort, 
+		@RequestBody String payload,
+		@ApiParam(value = "Database name") @PathVariable(value = "db") String db,
+		@ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection,
+		@ApiParam(value = "Set the starting point of the result set") @RequestParam(value = "from", defaultValue = "0") int from,
+		@ApiParam(value = "Limit the number of objects to return") @RequestParam(value = "size", defaultValue = "-1") int size,
+		@ApiParam(value = "Field used to order the result set") @RequestParam(value = "sort", required = false) String sort,
 		@ApiParam(value = "Ascending/descending order") @RequestParam(value = "order", defaultValue = "1") int order
 	) {
 		Map<String, Object> log = MessageHelper.initializeLog(MessageHelper.METHOD_QUERY, db, collection);
@@ -439,7 +470,7 @@ public class ObjectController {
 		} catch (Exception e) {
 			logger.error(e);
 			LoggerHelper.log(MessageHelper.METHOD_QUERY, log);
-			
+
 			return ErrorHandler.getInstance().handle(e, log);
 		}
 	}
@@ -511,7 +542,7 @@ public class ObjectController {
 		} catch (Exception e) {
 			logger.error(e);
 			LoggerHelper.log(MessageHelper.METHOD_AGGREGATE, log);
-			
+
 			return ErrorHandler.getInstance().handle(e, log);
 		}
 	}
@@ -543,7 +574,7 @@ public class ObjectController {
 		} catch (Exception e) {
 			logger.error(e);
 			LoggerHelper.log("count", log);
-			
+
 			return ErrorHandler.getInstance().handle(e, log);
 		}
 	}
@@ -580,7 +611,7 @@ public class ObjectController {
 		} catch (Exception e) {
 			logger.error(e);
 			LoggerHelper.log(MessageHelper.METHOD_DISTINCT, log);
-			
+
 			return ErrorHandler.getInstance().handle(e, log);
 		}
 	}

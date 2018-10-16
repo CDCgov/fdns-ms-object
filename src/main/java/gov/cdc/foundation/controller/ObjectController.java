@@ -379,15 +379,14 @@ public class ObjectController {
 	@ApiOperation(value = "Search object(s)", notes = "Search object(s)")
 	@ResponseBody
 	public ResponseEntity<?> search(
-			@ApiParam(value = "Database name") @PathVariable(value = "db") String db,
-			@ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection,
-			@ApiParam(value = "Search query") @RequestParam(value = "qs", defaultValue = "") String qs,
-			@ApiParam(value = "Set the starting point of the result set") @RequestParam(value = "from", defaultValue = "0") int from,
-			@ApiParam(value = "Limit the number of objects to return") @RequestParam(value = "size", defaultValue = "-1") int size,
-			@ApiParam(value = "Field used to order the result set") @RequestParam(value = "sort", required = false) String sort,
-			@ApiParam(value = "Ascending/descending order") @RequestParam(value = "order", defaultValue = "1") int order
-		) {
-
+		@ApiParam(value = "Database name") @PathVariable(value = "db") String db,
+		@ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection,
+		@ApiParam(value = "Search query") @RequestParam(value = "qs", defaultValue = "") String qs,
+		@ApiParam(value = "Set the starting point of the result set") @RequestParam(value = "from", defaultValue = "0") int from,
+		@ApiParam(value = "Limit the number of objects to return") @RequestParam(value = "size", defaultValue = "-1") int size,
+		@ApiParam(value = "Field used to order the result set") @RequestParam(value = "sort", required = false) String sort,
+		@ApiParam(value = "Ascending/descending order") @RequestParam(value = "order", defaultValue = "1") int order
+	) {
 		Map<String, Object> log = MessageHelper.initializeLog(MessageHelper.METHOD_SEARCH, db, collection);
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -413,8 +412,15 @@ public class ObjectController {
 	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}/find", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Find object(s)", notes = "Find object(s)")
 	@ResponseBody
-	public ResponseEntity<?> query(@RequestBody String payload, @ApiParam(value = "Database name") @PathVariable(value = "db") String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection, @ApiParam(value = "Set the starting point of the result set") @RequestParam(value = "from", defaultValue = "0") int from, @ApiParam(value = "Limit the number of objects to return") @RequestParam(value = "size", defaultValue = "-1") int size, @ApiParam(value = "Field used to order the result set") @RequestParam(value = "sort", required = false) String sort, @ApiParam(value = "Ascending/descending order") @RequestParam(value = "order", defaultValue = "1") int order) {
-
+	public ResponseEntity<?> query(
+		@RequestBody String payload, 
+		@ApiParam(value = "Database name") @PathVariable(value = "db") String db, 
+		@ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection, 
+		@ApiParam(value = "Set the starting point of the result set") @RequestParam(value = "from", defaultValue = "0") int from, 
+		@ApiParam(value = "Limit the number of objects to return") @RequestParam(value = "size", defaultValue = "-1") int size, 
+		@ApiParam(value = "Field used to order the result set") @RequestParam(value = "sort", required = false) String sort, 
+		@ApiParam(value = "Ascending/descending order") @RequestParam(value = "order", defaultValue = "1") int order
+	) {
 		Map<String, Object> log = MessageHelper.initializeLog(MessageHelper.METHOD_QUERY, db, collection);
 		ObjectMapper mapper = new ObjectMapper();
 

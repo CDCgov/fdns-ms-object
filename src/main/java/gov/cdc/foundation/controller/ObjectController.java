@@ -227,6 +227,21 @@ public class ObjectController {
 			// Resources should be closed
 			try {
 				parser = CSVParser.parse(IOUtils.toString(csvFile.getInputStream()), CSVFormat.valueOf(csvFormat));
+
+				for (CSVRecord csvRecord : parser) {
+					if (headers.isEmpty()) {
+						for (int i = 0; i < csvRecord.size(); i++)
+							headers.add(csvRecord.get(i));
+					} else {
+						Document doc = new Document();
+						for (int i = 0; i < csvRecord.size(); i++) {
+							if (i < headers.size()) {
+								doc.put(headers.get(i), csvRecord.get(i));
+							}
+						}
+						documents.add(doc);
+					}
+				}
 			}  catch (Exception e) {
 				logger.error(e);
 				LoggerHelper.log(MessageHelper.METHOD_BULKIMPORT, log);
@@ -235,21 +250,6 @@ public class ObjectController {
 			} finally {
 				if (parser != null)
 					parser.close();
-			}
-
-			for (CSVRecord csvRecord : parser) {
-				if (headers.isEmpty()) {
-					for (int i = 0; i < csvRecord.size(); i++)
-						headers.add(csvRecord.get(i));
-				} else {
-					Document doc = new Document();
-					for (int i = 0; i < csvRecord.size(); i++) {
-						if (i < headers.size()) {
-							doc.put(headers.get(i), csvRecord.get(i));
-						}
-					}
-					documents.add(doc);
-				}
 			}
 
 			coll.insertMany(documents);
@@ -406,8 +406,8 @@ public class ObjectController {
 	}
 
 	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
-	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}/search", produces = MediaType.APPLICATION_JSON_VALUE)
-	@ApiOperation(value = "Search object(s)", notes = "Search object(s)")
+	@RequestMapping(method = RequestMethod.GET, value = "/{db}/{collection}/search", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ApiOperation(value = "Search object(s) using query parameters", notes = "Search object(s) in a specific collection using URL parameters instead of POST payloads (as FIND does)")
 	@ResponseBody
 	public ResponseEntity<?> search(
 		@ApiParam(value = "Database name") @PathVariable(value = "db") String db,
@@ -441,7 +441,7 @@ public class ObjectController {
 
 	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
 	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}/find", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	@ApiOperation(value = "Find object(s)", notes = "Find object(s)")
+	@ApiOperation(value = "Find object(s)", notes = "Uses MongoDB's find method to  object(s)")
 	@ResponseBody
 	public ResponseEntity<?> query(
 		@RequestBody String payload,
@@ -505,7 +505,7 @@ public class ObjectController {
 
 	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
 	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}/aggregate", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	@ApiOperation(value = "Aggregate", notes = "Aggregate")
+	@ApiOperation(value = "Mongo Aggregate", notes = "Uses MongoDB's Aggregate method to calculate aggregate values in a collection")
 	@ResponseBody
 	public ResponseEntity<?> aggregate(@RequestBody String payload, @ApiParam(value = "Database name") @PathVariable(value = "db") String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection) {
 
@@ -549,7 +549,7 @@ public class ObjectController {
 
 	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
 	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}/count", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	@ApiOperation(value = "Count object(s)", notes = "Count object(s)")
+	@ApiOperation(value = "Count object(s)", notes = "Uses MongoDB's Count method to count object(s) in a collection")
 	@ResponseBody
 	public ResponseEntity<?> count(@RequestBody String payload, @ApiParam(value = "Database name") @PathVariable(value = "db") String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection) {
 
@@ -581,7 +581,7 @@ public class ObjectController {
 
 	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
 	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}/distinct/{field}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	@ApiOperation(value = "Get distinct values", notes = "Get distinct values")
+	@ApiOperation(value = "Get distinct values from a specified field", notes = "Uses MongoDB's distinct method to get the distinct values for a specified field across a single collection")
 	@ResponseBody
 	public ResponseEntity<?> distinct(@RequestBody String payload, @ApiParam(value = "Database name") @PathVariable(value = "db") String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection, @ApiParam(value = "Field name") @PathVariable(value = "field") String field) {
 

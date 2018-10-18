@@ -15,6 +15,8 @@ public class MessageHelper extends AbstractMessageHelper {
 	public static final String METHOD_GETOBJECT = "getObject";
 	public static final String METHOD_CREATEOBJECT = "createObject";
 	public static final String METHOD_CREATEOBJECTS = "createObjects";
+	public static final String METHOD_GETCOLLECTION = "getCollection";
+
 	public static final String METHOD_BULKIMPORT = "bulkImport";
 	public static final String METHOD_UPDATEOBJECT = "updateObject";
 	public static final String METHOD_DELETEOBJECT = "deleteObject";
@@ -42,5 +44,5 @@ public class MessageHelper extends AbstractMessageHelper {
 		log.put(MessageHelper.CONST_COLLECTION, collection);
 		return log;
 	}
-	
+
 }

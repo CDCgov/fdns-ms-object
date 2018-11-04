@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.codec.Charsets;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -226,7 +227,7 @@ public class ObjectController {
 
 			// Resources should be closed
 			try {
-				parser = CSVParser.parse(IOUtils.toString(csvFile.getInputStream()), CSVFormat.valueOf(csvFormat));
+				parser = CSVParser.parse(IOUtils.toString(csvFile.getInputStream(), Charsets.UTF_8), CSVFormat.valueOf(csvFormat));
 
 				for (CSVRecord csvRecord : parser) {
 					if (headers.isEmpty()) {
@@ -492,7 +493,7 @@ public class ObjectController {
 				results.put(new JSONObject(iterator.next().toJson()));
 
 			json.put("items", results);
-			json.put("total", coll.count(query));
+			json.put("total", coll.countDocuments(query));
 			if (from > 0)
 				json.put("from", from);
 			if (size > 0)
@@ -568,7 +569,7 @@ public class ObjectController {
 			Document query = Document.parse(payload);
 
 			JSONObject json = new JSONObject();
-			json.put(MessageHelper.METHOD_COUNT, coll.count(query));
+			json.put(MessageHelper.METHOD_COUNT, coll.countDocuments(query));
 
 			return new ResponseEntity<>(mapper.readTree(json.toString()), HttpStatus.OK);
 		} catch (Exception e) {

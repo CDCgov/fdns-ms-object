@@ -53,14 +53,14 @@ button:hover { background: #A7D5FF; outline: none; }
   --header 'Content-Type: application/json' \
   --header 'Accept: application/json' \
   -d '{"hello": "world"}' \
-  '<span class='origin'>http://127.0.0.1:8083/</span>dbtest/test'</code></pre>
+  '<span class='origin'>http://127.0.0.1:8083/</span>api/1.0/dbtest/test'</code></pre>
       <p>Then, you can return all objects in your collection:</p>
       <button class="btn" data-clipboard-target="#curl-cmd-2">Copy</button>
       <pre id="curl-cmd-2"><code>curl -X POST \
   --header 'Content-Type: application/json' \
   --header 'Accept: application/json' \
   -d '{}' \
-  '<span class='origin'>http://127.0.0.1:8083/</span>dbtest/test/find'
+  '<span class='origin'>http://127.0.0.1:8083/</span>api/1.0/dbtest/test/find'
 </code></pre>
     </section>
   </div>

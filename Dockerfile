@@ -1,5 +1,5 @@
 # build stage
-FROM maven:3-jdk-11 as builder
+FROM maven:3.5.3-jdk-8 as builder
 RUN mkdir -p /usr/src/app
 COPY pom.xml /usr/src/app
 WORKDIR /usr/src/app

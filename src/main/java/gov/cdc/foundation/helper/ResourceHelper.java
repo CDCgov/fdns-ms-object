@@ -1,7 +1,5 @@
 package gov.cdc.foundation.helper;
 
-import java.util.Arrays;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,7 +44,7 @@ public class ResourceHelper {
 					     .writeConcern(WriteConcern.JOURNALED)
 					     .build();
 				
-				mongo = new MongoClient(new ServerAddress(host, port), Arrays.asList(credential), options);
+				mongo = new MongoClient(new ServerAddress(host, port), credential, options);
 				
 			} else {
 				mongo = new MongoClient(host, port);

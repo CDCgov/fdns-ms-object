@@ -1,9 +1,6 @@
 # build stage
-FROM maven:3.5.3-jdk-8 as builder
-RUN mkdir -p /usr/src/app
-COPY pom.xml /usr/src/app
-WORKDIR /usr/src/app
-RUN mvn dependency:resolve
+FROM cdcgov/maven:fdns as builder
+
 COPY . /usr/src/app
 RUN mvn clean package
 

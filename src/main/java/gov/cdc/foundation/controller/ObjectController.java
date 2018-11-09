@@ -7,6 +7,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.mongodb.client.*;
+import com.mongodb.client.result.UpdateResult;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.apache.commons.codec.Charsets;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -65,6 +69,13 @@ public class ObjectController {
 	}
 
 	@RequestMapping(method = RequestMethod.GET)
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Returns version"),
+			@ApiResponse(code = 400, message = "Route parameters or json payload contain invalid data"),
+			@ApiResponse(code = 401, message = "HTTP header lacks valid OAuth2 token"),
+			@ApiResponse(code = 403, message = "HTTP header has valid OAuth2 token but lacks the appropriate scope to use this route"),
+			@ApiResponse(code = 404, message = "Not Found")
+	})
 	@ResponseBody
 	public ResponseEntity<?> index() throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
@@ -87,6 +98,13 @@ public class ObjectController {
 	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection)) or (#db == 'settings')")
 	@RequestMapping(method = RequestMethod.GET, value = "/{db}/{collection}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Get object", notes = "Get object")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Returns object"),
+			@ApiResponse(code = 400, message = "Route parameters or json payload contain invalid data"),
+			@ApiResponse(code = 401, message = "HTTP header lacks valid OAuth2 token"),
+			@ApiResponse(code = 403, message = "HTTP header has valid OAuth2 token but lacks the appropriate scope to use this route"),
+			@ApiResponse(code = 404, message = "Object not found in collection")
+	})
 	@ResponseBody
 	public ResponseEntity<?> getObject(@ApiParam(value = "Database name") @PathVariable(value = "db") String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection, @ApiParam(value = "Object Id") @PathVariable(value = "id") String id) {
 
@@ -102,13 +120,23 @@ public class ObjectController {
 				throw new ServiceException(MessageHelper.ERROR_COLLECTION_REQUIRED);
 
 			MongoCollection<Document> coll = ResourceHelper.getDB(db).getCollection(collection);
+			if(collectionExists(collection,db) == false){
+				LoggerHelper.log(MessageHelper.METHOD_GETOBJECT,log);
+				log.put(MessageHelper.CONST_MESSAGE,"Collection "+collection+" does not exist");
+				return ErrorHandler.getInstance().handle(HttpStatus.NOT_FOUND,log);
+			}
 
 			Object objectId = getId(id);
 			FindIterable<Document> results = coll.find(new BasicDBObject("_id", objectId));
+
 			if (results.iterator().hasNext())
 				return new ResponseEntity<>(mapper.readTree(results.first().toJson()), HttpStatus.OK);
-			else
-				throw new ServiceException("The object " + id + " doesn't exist in the collection " + collection);
+			else {
+				LoggerHelper.log(MessageHelper.METHOD_GETOBJECT, log);
+				log.put(MessageHelper.CONST_MESSAGE, "The object "+id+ " doesn't exist in the collection "+collection);
+				return ErrorHandler.getInstance().handle(HttpStatus.NOT_FOUND,log);
+			}
+
 		} catch (Exception e) {
 			logger.error(e);
 			LoggerHelper.log(MessageHelper.METHOD_GETOBJECT, log);
@@ -120,6 +148,14 @@ public class ObjectController {
 	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection)) or (#db == 'settings')")
 	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Create object", notes = "Create object")
+	@ApiResponses(value = {
+			@ApiResponse(code = 201, message = "Returns object that was just created"),
+			@ApiResponse(code = 400, message = "Route parameters or json payload contain invalid data"),
+			@ApiResponse(code = 401, message = "HTTP header lacks valid OAuth2 token"),
+			@ApiResponse(code = 403, message = "HTTP header has valid OAuth2 token but lacks the appropriate scope to use this route"),
+			@ApiResponse(code = 404, message = "Not Found"),
+			@ApiResponse(code = 413, message = "Request payload too large")
+	})
 	@ResponseBody
 	public ResponseEntity<?> createObject(@RequestBody String payload, @ApiParam(value = "Database name") @PathVariable(value = "db", required = true) String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection", required = true) String collection) {
 
@@ -143,6 +179,13 @@ public class ObjectController {
 	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection)) or (#db == 'settings')")
 	@RequestMapping(method = RequestMethod.GET, value = "/{db}/{collection}/", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Get all objects in a collection", notes = "Get all objects in a collection")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Returns all objects in specified collection"),
+			@ApiResponse(code = 400, message = "Route parameters or json payload contain invalid data"),
+			@ApiResponse(code = 401, message = "HTTP header lacks valid OAuth2 token"),
+			@ApiResponse(code = 403, message = "HTTP header has valid OAuth2 token but lacks the appropriate scope to use this route"),
+			@ApiResponse(code = 404, message = "Collection not found in the specified database")
+	})
 	@ResponseBody
 	public ResponseEntity<?> getCollection(@ApiParam(value = "Database name") @PathVariable(value = "db") String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection) {
 
@@ -161,8 +204,11 @@ public class ObjectController {
 
 			if (results.iterator().hasNext())
 				return new ResponseEntity<>(mapper.readTree(json.toString()), HttpStatus.OK);
-			else
-				throw new ServiceException("The collection, " + collection + ", does not exist.");
+			else{
+				LoggerHelper.log(MessageHelper.METHOD_GETCOLLECTION, log);
+				log.put(MessageHelper.CONST_MESSAGE, "The collection, " + collection + ", does not exist.");
+				return ErrorHandler.getInstance().handle(HttpStatus.NOT_FOUND,log);
+			}
 		} catch (Exception e) {
 			logger.error(e);
 			LoggerHelper.log(MessageHelper.METHOD_GETCOLLECTION, log);
@@ -174,6 +220,14 @@ public class ObjectController {
 	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection)) or (#db == 'settings')")
 	@RequestMapping(method = RequestMethod.POST, value = "/multi/{db}/{collection}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Create a list of objects", notes = "Create a list of objects")
+	@ApiResponses(value = {
+			@ApiResponse(code = 201, message = "Returns ids of created objects"),
+			@ApiResponse(code = 400, message = "Route parameters or json payload contain invalid data"),
+			@ApiResponse(code = 401, message = "HTTP header lacks valid OAuth2 token"),
+			@ApiResponse(code = 403, message = "HTTP header has valid OAuth2 token but lacks the appropriate scope to use this route"),
+			@ApiResponse(code = 404, message = "Not Found"),
+			@ApiResponse(code = 413, message = "Request payload too large")
+	})
 	@ResponseBody
 	public ResponseEntity<?> createObjects(@ApiParam(value = "Array of JSON objects") @RequestBody String payload, @ApiParam(value = "Database name") @PathVariable(value = "db", required = true) String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection", required = true) String collection) {
 
@@ -213,6 +267,15 @@ public class ObjectController {
 	@RequestMapping(method = RequestMethod.POST, value = "/bulk/{db}/{collection}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Bulk import of objects from a CSV file", notes = "Bulk import of objects from a CSV file")
 	@ResponseBody
+	@ApiResponses(value = {
+			@ApiResponse(code = 201, message = "Returns ids of created objects"),
+			@ApiResponse(code = 400, message = "Route parameters or json payload contain invalid data"),
+			@ApiResponse(code = 401, message = "HTTP header lacks valid OAuth2 token"),
+			@ApiResponse(code = 403, message = "HTTP header has valid OAuth2 token but lacks the appropriate scope to use this route"),
+			@ApiResponse(code = 404, message = "Not Found"),
+			@ApiResponse(code = 413, message = "Request payload too large")
+	})
+    //TODO: CSV files do not return 413 if too large
 	public ResponseEntity<?> bulkImport(@ApiParam(value = "CSV file") @RequestParam("csv") MultipartFile csvFile, @ApiParam(value = "Database name") @PathVariable(value = "db", required = true) String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection", required = true) String collection, @ApiParam(value = "CSV format", allowableValues="Default,Excel,MySQL,RFC4180,TDF", defaultValue="Default") @RequestParam(value = "csvFormat", required = true) String csvFormat) {
 
 		Map<String, Object> log = MessageHelper.initializeLog(MessageHelper.METHOD_BULKIMPORT, db, collection);
@@ -276,6 +339,14 @@ public class ObjectController {
 	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection)) or (#db == 'settings')")
 	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Create object with id", notes = "Create object with id")
+	@ApiResponses(value = {
+			@ApiResponse(code = 201, message = "Returns object that was just created"),
+			@ApiResponse(code = 400, message = "Route parameters or json payload contain invalid data"),
+			@ApiResponse(code = 401, message = "HTTP header lacks valid OAuth2 token"),
+			@ApiResponse(code = 403, message = "HTTP header has valid OAuth2 token but lacks the appropriate scope to use this route"),
+			@ApiResponse(code = 404, message = "Not Found"),
+			@ApiResponse(code = 413, message = "Request payload too large")
+	})
 	@ResponseBody
 	public ResponseEntity<?> createObjectWithId(@RequestBody String payload, @ApiParam(value = "Database name") @PathVariable(value = "db") String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection, @ApiParam(value = "Object Id") @PathVariable(value = "id") String id) {
 
@@ -307,8 +378,16 @@ public class ObjectController {
 	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection)) or (#db == 'settings')")
 	@RequestMapping(method = RequestMethod.PUT, value = "/{db}/{collection}/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Update object", notes = "Update object")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Returns object that was just updated"),
+			@ApiResponse(code = 400, message = "Route parameters or json payload contain invalid data"),
+			@ApiResponse(code = 401, message = "HTTP header lacks valid OAuth2 token"),
+			@ApiResponse(code = 403, message = "HTTP header has valid OAuth2 token but lacks the appropriate scope to use this route"),
+			@ApiResponse(code = 404, message = "Object not found in collection"),
+			@ApiResponse(code = 413, message = "Request payload too large")
+	})
 	@ResponseBody
-	public ResponseEntity<?> updateObject(@RequestBody String payload, @ApiParam(value = "Database name") @PathVariable(value = "db") String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection, @ApiParam(value = "Object Id") @PathVariable(value = "id") String id) {
+	public ResponseEntity<?> updateObject(@RequestBody @ApiParam(value = "TEST") String payload, @ApiParam(value = "Database name") @PathVariable(value = "db") String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection, @ApiParam(value = "Object Id") @PathVariable(value = "id") String id) {
 
 		Map<String, Object> log = MessageHelper.initializeLog(MessageHelper.METHOD_UPDATEOBJECT, db, collection);
 		ObjectMapper mapper = new ObjectMapper();
@@ -326,11 +405,25 @@ public class ObjectController {
 				throw new ServiceException("The following collection is immutable: " + collection);
 
 			MongoCollection<Document> coll = ResourceHelper.getDB(db).getCollection(collection);
+			if(collectionExists(collection,db) == false){
+				LoggerHelper.log(MessageHelper.METHOD_UPDATEOBJECT,log);
+				log.put(MessageHelper.CONST_MESSAGE,"Collection "+collection+" does not exist");
+				return ErrorHandler.getInstance().handle(HttpStatus.NOT_FOUND,log);
+			}
+
 			Document doc = Document.parse(payload);
 
 			Object objectId = getId(id);
-			coll.replaceOne(new BasicDBObject("_id", objectId), doc);
-			return new ResponseEntity<>(mapper.readTree(doc.toJson()), HttpStatus.OK);
+			UpdateResult updateResult = coll.replaceOne(new BasicDBObject("_id", objectId), doc);
+
+			if(updateResult.getModifiedCount() == 0){
+				LoggerHelper.log(MessageHelper.METHOD_UPDATEOBJECT,log);
+				log.put(MessageHelper.CONST_MESSAGE, "The object "+id+" doesn't exist in the collection "+collection);
+				return ErrorHandler.getInstance().handle(HttpStatus.NOT_FOUND,log);
+			}else{
+				return new ResponseEntity<>(mapper.readTree(doc.toJson()), HttpStatus.OK);
+			}
+
 		} catch (Exception e) {
 			logger.error(e);
 			LoggerHelper.log(MessageHelper.METHOD_UPDATEOBJECT, log);
@@ -342,6 +435,13 @@ public class ObjectController {
 	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection)) or (#db == 'settings')")
 	@RequestMapping(method = RequestMethod.DELETE, value = "/{db}/{collection}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Delete object", notes = "Delete object")
+	@ApiResponses(value = {
+					@ApiResponse(code = 200, message = "Returns success boolean"),
+                    @ApiResponse(code = 400, message = "Route parameters or json payload contain invalid data"),
+					@ApiResponse(code = 401, message = "HTTP header lacks valid OAuth2 token"),
+					@ApiResponse(code = 403, message = "HTTP header has valid OAuth2 token but lacks the appropriate scope to use this route"),
+                    @ApiResponse(code = 404, message = "Object with this id not found in the collection or collection does not exist")
+				})
 	@ResponseBody
 	public ResponseEntity<?> deleteObject(@ApiParam(value = "Database name") @PathVariable(value = "db") String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection, @ApiParam(value = "Object Id") @PathVariable(value = "id") String id) {
 
@@ -351,22 +451,35 @@ public class ObjectController {
 
 		try {
 
-			if (collection == null || collection.length() == 0)
+			if (collection == null || collection.length() == 0) {
 				throw new ServiceException(MessageHelper.ERROR_COLLECTION_REQUIRED);
-			if (id == null || id.length() == 0)
+			}
+			if (id == null || id.length() == 0) {
 				throw new ServiceException(MessageHelper.ERROR_ID_REQUIRED);
+			}
 
 			if (isImmutableCollection(collection))
 				throw new ServiceException("The following collection is immutable: " + collection);
 
 			MongoCollection<Document> coll = ResourceHelper.getDB(db).getCollection(collection);
+			if(collectionExists(collection,db) == false){
+				LoggerHelper.log(MessageHelper.METHOD_DELETEOBJECT,log);
+				log.put(MessageHelper.CONST_MESSAGE,"Collection "+collection+" does not exist");
+				return ErrorHandler.getInstance().handle(HttpStatus.NOT_FOUND,log);
+			}
 
 			Object objectId = getId(id);
 			DeleteResult result = coll.deleteOne(new BasicDBObject("_id", objectId));
 			JSONObject json = new JSONObject();
-			json.put(MessageHelper.CONST_SUCCESS, true);
-			json.put("deleted", result.getDeletedCount());
-			return new ResponseEntity<>(mapper.readTree(json.toString()), HttpStatus.OK);
+			if(result.getDeletedCount() == 0){
+				LoggerHelper.log(MessageHelper.METHOD_DELETEOBJECT,log);
+				log.put(MessageHelper.CONST_MESSAGE, "The object "+id+" doesn't exist in the collection "+collection);
+				return ErrorHandler.getInstance().handle(HttpStatus.NOT_FOUND,log);
+			}else{
+				json.put(MessageHelper.CONST_SUCCESS, true);
+				json.put("deleted", result.getDeletedCount());
+				return new ResponseEntity<>(mapper.readTree(json.toString()), HttpStatus.OK);
+			}
 		} catch (Exception e) {
 			logger.error(e);
 			LoggerHelper.log(MessageHelper.METHOD_DELETEOBJECT, log);
@@ -378,6 +491,13 @@ public class ObjectController {
 	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
 	@RequestMapping(method = RequestMethod.DELETE, value = "/{db}/{collection}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Delete collection", notes = "Delete collection")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Returns success boolean"),
+			@ApiResponse(code = 400, message = "Route parameters or json payload contain invalid data"),
+			@ApiResponse(code = 401, message = "HTTP header lacks valid OAuth2 token"),
+			@ApiResponse(code = 403, message = "HTTP header has valid OAuth2 token but lacks the appropriate scope to use this route"),
+			@ApiResponse(code = 404, message = "Collection not found in database")
+	})
 	@ResponseBody
 	public ResponseEntity<?> deleteCollection(@ApiParam(value = "Database name") @PathVariable(value = "db") String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection) {
 
@@ -393,6 +513,13 @@ public class ObjectController {
 				throw new ServiceException("The following collection is immutable: " + collection);
 
 			MongoCollection<Document> coll = ResourceHelper.getDB(db).getCollection(collection);
+
+			if(collectionExists(collection,db) == false){
+				LoggerHelper.log(MessageHelper.METHOD_DELETECOLLECTION,log);
+				log.put(MessageHelper.CONST_MESSAGE,"Collection "+collection+" does not exist");
+				return ErrorHandler.getInstance().handle(HttpStatus.NOT_FOUND,log);
+			}
+
 			coll.drop();
 
 			JSONObject json = new JSONObject();
@@ -409,6 +536,13 @@ public class ObjectController {
 	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
 	@RequestMapping(method = RequestMethod.GET, value = "/{db}/{collection}/search", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Search object(s) using query parameters", notes = "Search object(s) in a specific collection using URL parameters instead of POST payloads (as FIND does)")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Returns success boolean"),
+			@ApiResponse(code = 400, message = "Route parameters or json payload contain invalid data"),
+			@ApiResponse(code = 401, message = "HTTP header lacks valid OAuth2 token"),
+			@ApiResponse(code = 403, message = "HTTP header has valid OAuth2 token but lacks the appropriate scope to use this route"),
+			@ApiResponse(code = 404, message = "Not Found")
+	})
 	@ResponseBody
 	public ResponseEntity<?> search(
 		@ApiParam(value = "Database name") @PathVariable(value = "db") String db,
@@ -443,6 +577,14 @@ public class ObjectController {
 	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
 	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}/find", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Find object(s)", notes = "Uses MongoDB's find method to  object(s)")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Returns all objects in specified collection"),
+			@ApiResponse(code = 400, message = "Route parameters or json payload contain invalid data"),
+			@ApiResponse(code = 401, message = "HTTP header lacks valid OAuth2 token"),
+			@ApiResponse(code = 403, message = "HTTP header has valid OAuth2 token but lacks the appropriate scope to use this route"),
+			@ApiResponse(code = 404, message = "Not Found"),
+			@ApiResponse(code = 413, message = "Request payload too large")
+	})
 	@ResponseBody
 	public ResponseEntity<?> query(
 		@RequestBody String payload,
@@ -507,6 +649,14 @@ public class ObjectController {
 	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
 	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}/aggregate", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Mongo Aggregate", notes = "Uses MongoDB's Aggregate method to calculate aggregate values in a collection")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Returns all objects in specified collection"),
+			@ApiResponse(code = 400, message = "Route parameters or json payload contain invalid data"),
+			@ApiResponse(code = 401, message = "HTTP header lacks valid OAuth2 token"),
+			@ApiResponse(code = 403, message = "HTTP header has valid OAuth2 token but lacks the appropriate scope to use this route"),
+			@ApiResponse(code = 404, message = "Collection does not exist"),
+			@ApiResponse(code = 413, message = "Request payload too large")
+	})
 	@ResponseBody
 	public ResponseEntity<?> aggregate(@RequestBody String payload, @ApiParam(value = "Database name") @PathVariable(value = "db") String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection) {
 
@@ -522,6 +672,11 @@ public class ObjectController {
 				throw new ServiceException(MessageHelper.ERROR_PAYLOAD_REQUIRED);
 
 			MongoCollection<Document> coll = ResourceHelper.getDB(db).getCollection(collection);
+			if(collectionExists(collection,db) == false){
+				LoggerHelper.log(MessageHelper.METHOD_AGGREGATE,log);
+				log.put(MessageHelper.CONST_MESSAGE,"Collection "+collection+" does not exist");
+				return ErrorHandler.getInstance().handle(HttpStatus.NOT_FOUND,log);
+			}
 
 			JSONArray pipelines = new JSONArray(payload);
 			List<Document> pps = new ArrayList<>();
@@ -551,6 +706,14 @@ public class ObjectController {
 	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
 	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}/count", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Count object(s)", notes = "Uses MongoDB's Count method to count object(s) in a collection")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Returns number of objects in collection"),
+			@ApiResponse(code = 400, message = "Route parameters or json payload contain invalid data"),
+			@ApiResponse(code = 401, message = "HTTP header lacks valid OAuth2 token"),
+			@ApiResponse(code = 403, message = "HTTP header has valid OAuth2 token but lacks the appropriate scope to use this route"),
+			@ApiResponse(code = 404, message = "Collection does not exist"),
+			@ApiResponse(code = 413, message = "Request payload too large")
+	})
 	@ResponseBody
 	public ResponseEntity<?> count(@RequestBody String payload, @ApiParam(value = "Database name") @PathVariable(value = "db") String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection) {
 
@@ -566,6 +729,12 @@ public class ObjectController {
 				throw new ServiceException(MessageHelper.ERROR_PAYLOAD_REQUIRED);
 
 			MongoCollection<Document> coll = ResourceHelper.getDB(db).getCollection(collection);
+			if(collectionExists(collection,db) == false){
+				LoggerHelper.log(MessageHelper.METHOD_COUNT,log);
+				log.put(MessageHelper.CONST_MESSAGE,"Collection "+collection+" does not exist");
+				return ErrorHandler.getInstance().handle(HttpStatus.NOT_FOUND,log);
+			}
+
 			Document query = Document.parse(payload);
 
 			JSONObject json = new JSONObject();
@@ -583,6 +752,14 @@ public class ObjectController {
 	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
 	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}/distinct/{field}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Get distinct values from a specified field", notes = "Uses MongoDB's distinct method to get the distinct values for a specified field across a single collection")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Returns list of distinct values"),
+			@ApiResponse(code = 400, message = "Route parameters or json payload contain invalid data"),
+			@ApiResponse(code = 401, message = "HTTP header lacks valid OAuth2 token"),
+			@ApiResponse(code = 403, message = "HTTP header has valid OAuth2 token but lacks the appropriate scope to use this route"),
+			@ApiResponse(code = 404, message = "Collection not found in database"),
+			@ApiResponse(code = 413, message = "Request entity too large")
+	})
 	@ResponseBody
 	public ResponseEntity<?> distinct(@RequestBody String payload, @ApiParam(value = "Database name") @PathVariable(value = "db") String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection, @ApiParam(value = "Field name") @PathVariable(value = "field") String field) {
 
@@ -599,6 +776,12 @@ public class ObjectController {
 				throw new ServiceException(MessageHelper.ERROR_PAYLOAD_REQUIRED);
 
 			MongoCollection<Document> coll = ResourceHelper.getDB(db).getCollection(collection);
+			if(collectionExists(collection,db) == false){
+				LoggerHelper.log(MessageHelper.METHOD_DISTINCT,log);
+				log.put(MessageHelper.CONST_MESSAGE,"Collection "+collection+" does not exist");
+				return ErrorHandler.getInstance().handle(HttpStatus.NOT_FOUND,log);
+			}
+
 			Document query = Document.parse(payload);
 
 			DistinctIterable<String> results = coll.distinct(field, query, String.class);
@@ -630,5 +813,16 @@ public class ObjectController {
 			logger.debug(e);
 		}
 		return objectId;
+	}
+
+	private boolean collectionExists(String collectionName, String db){
+		MongoIterable collections = ResourceHelper.getDB(db).listCollectionNames();
+		MongoCursor<String> cursor = collections.iterator();
+		while(cursor.hasNext()){
+			if(cursor.next().equals(collectionName)){
+				return true;
+			}
+		}
+		return false;
 	}
 }

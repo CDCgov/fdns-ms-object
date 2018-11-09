@@ -98,7 +98,7 @@ public class ObjectApplicationErrorTests {
 	@Test
 	public void getObject() throws Exception {
 		ResponseEntity<JsonNode> response = this.restTemplate.getForEntity(objectCtrlUrl + "/{db}/{collection}/{id}", JsonNode.class, "<na>", "<na>", "<na>");
-		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 	}
 	
 	@Test
@@ -106,7 +106,7 @@ public class ObjectApplicationErrorTests {
 		mvc.perform(post(objectCtrlUrl + "/<na>/<na>/count")
                 .content(";;")
                 .contentType("application/json"))
-				.andExpect(status().isBadRequest());
+				.andExpect(status().isNotFound());
 	}
 	
 	@Test
@@ -115,7 +115,7 @@ public class ObjectApplicationErrorTests {
 		mvc.perform(post(objectCtrlUrl + "/<na>/<na>/aggregate")
 				.content(aggregate)
 				.contentType("application/json"))
-				.andExpect(status().isBadRequest());
+				.andExpect(status().isNotFound());
 	}
 	
 	@Test
@@ -144,7 +144,7 @@ public class ObjectApplicationErrorTests {
 		mvc.perform(post(objectCtrlUrl + "/<na>/<na>/distinct/test")
                 .content(";;")
                 .contentType("application/json"))
-				.andExpect(status().isBadRequest());
+				.andExpect(status().isNotFound());
 	}
 	
 	@Test

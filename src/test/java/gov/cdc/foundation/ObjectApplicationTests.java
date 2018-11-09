@@ -2,6 +2,7 @@ package gov.cdc.foundation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -32,6 +33,8 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import javax.servlet.http.HttpServletResponse;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
@@ -164,12 +167,23 @@ public class ObjectApplicationTests {
 	}
 	
 	public int countObject(String collection) throws Exception {
-		MvcResult result = mvc.perform(post(baseUrlPath + "/" + DB_NAME + "/" + collection + "/count")
-                .content("{}")
-                .contentType("application/json"))
-				.andExpect(status().isOk())
-				.andReturn();
-		return (new JSONObject(result.getResponse().getContentAsString())).getInt("count");
+		Boolean isEmpty = aggregate(collection) == -1 ? true:false;
+		MvcResult result;
+		if(isEmpty) {
+			mvc.perform(post(baseUrlPath + "/" + DB_NAME + "/" + collection + "/count")
+					.content("{}")
+					.contentType("application/json"))
+					.andExpect(status().isNotFound())
+					.andReturn();
+			return -1;
+		}else {
+			result = mvc.perform(post(baseUrlPath + "/" + DB_NAME + "/" + collection + "/count")
+					.content("{}")
+					.contentType("application/json"))
+					.andExpect(status().isOk())
+					.andReturn();
+			return (new JSONObject(result.getResponse().getContentAsString())).getInt("count");
+		}
 	}
 	
 	public int aggregate(String collection) throws Exception {
@@ -177,9 +191,14 @@ public class ObjectApplicationTests {
 		MvcResult result = mvc.perform(post(baseUrlPath + "/" + DB_NAME + "/" + collection + "/aggregate")
 				.content(aggregate)
 				.contentType("application/json"))
-				.andExpect(status().isOk())
 				.andReturn();
-		return (new JSONObject(result.getResponse().getContentAsString())).getJSONArray("items").length();
+		if(result.getResponse().getStatus() == HttpStatus.OK.value()){
+			assertTrue(result.getResponse().getStatus() == HttpStatus.OK.value());
+			return (new JSONObject(result.getResponse().getContentAsString())).getJSONArray("items").length();
+		}else{
+			assertTrue(result.getResponse().getStatus() == HttpStatus.NOT_FOUND.value());
+			return -1;
+		}
 	}
 	
 	public int queryAllObjects(String collection) throws Exception {
@@ -208,12 +227,19 @@ public class ObjectApplicationTests {
 		assertThat(body).extractingJsonPathBooleanValue("@.success").isEqualTo(true);
 	}
 	
-	public void deleteCollection(String collection) throws IOException {
+	public void deleteCollection(String collection) throws Exception {
+		Boolean isEmpty = aggregate(collection) == -1 ? true:false;
 		ResponseEntity<JsonNode> response = this.restTemplate.exchange(baseUrlPath + "/{db}/{collection}", HttpMethod.DELETE, null, JsonNode.class, DB_NAME, collection);
 		JsonContent<JsonNode> body = this.json.write(response.getBody());
-		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-		assertThat(body).hasJsonPathBooleanValue("@.success");
-		assertThat(body).extractingJsonPathBooleanValue("@.success").isEqualTo(true);
+		if(isEmpty){
+			assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+			assertThat(body).hasJsonPathBooleanValue("@.success");
+			assertThat(body).extractingJsonPathBooleanValue("@.success").isEqualTo(false);
+		}else {
+			assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+			assertThat(body).hasJsonPathBooleanValue("@.success");
+			assertThat(body).extractingJsonPathBooleanValue("@.success").isEqualTo(true);
+		}
 	}
 	
 }

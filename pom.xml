@@ -123,7 +123,8 @@
 		<dependency>
 			<groupId>gov.cdc</groupId>
 			<artifactId>fdns-java-sdk</artifactId>
-			<version>1.0.2</version>
+			<version>1.0.3</version>
+
 		</dependency>
 
 		<!-- dependency overrides from the dependency tree to fix vulnerabilities -->

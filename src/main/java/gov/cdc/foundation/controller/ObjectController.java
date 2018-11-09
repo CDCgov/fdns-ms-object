@@ -387,7 +387,7 @@ public class ObjectController {
 			@ApiResponse(code = 413, message = "Request payload too large")
 	})
 	@ResponseBody
-	public ResponseEntity<?> updateObject(@RequestBody @ApiParam(value = "TEST") String payload, @ApiParam(value = "Database name") @PathVariable(value = "db") String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection, @ApiParam(value = "Object Id") @PathVariable(value = "id") String id) {
+	public ResponseEntity<?> updateObject(@RequestBody @ApiParam(value = "Payload") String payload, @ApiParam(value = "Database name") @PathVariable(value = "db") String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection, @ApiParam(value = "Object Id") @PathVariable(value = "id") String id) {
 
 		Map<String, Object> log = MessageHelper.initializeLog(MessageHelper.METHOD_UPDATEOBJECT, db, collection);
 		ObjectMapper mapper = new ObjectMapper();

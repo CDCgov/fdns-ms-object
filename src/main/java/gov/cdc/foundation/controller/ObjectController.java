@@ -95,7 +95,7 @@ public class ObjectController {
 	}
 
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection)) or (#db == 'settings')")
+	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.read')) or (#db == 'settings')")
 	@RequestMapping(method = RequestMethod.GET, value = "/{db}/{collection}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Get object", notes = "Get object")
 	@ApiResponses(value = {
@@ -145,7 +145,7 @@ public class ObjectController {
 		}
 	}
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection)) or (#db == 'settings')")
+	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.create')) or (#db == 'settings')")
 	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Create object", notes = "Create object")
 	@ApiResponses(value = {
@@ -176,7 +176,7 @@ public class ObjectController {
 		}
 	}
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection)) or (#db == 'settings')")
+	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.read')) or (#db == 'settings')")
 	@RequestMapping(method = RequestMethod.GET, value = "/{db}/{collection}/", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Get all objects in a collection", notes = "Get all objects in a collection")
 	@ApiResponses(value = {
@@ -217,7 +217,7 @@ public class ObjectController {
 		}
 	}
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection)) or (#db == 'settings')")
+	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.create')) or (#db == 'settings')")
 	@RequestMapping(method = RequestMethod.POST, value = "/multi/{db}/{collection}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Create a list of objects", notes = "Create a list of objects")
 	@ApiResponses(value = {
@@ -263,7 +263,7 @@ public class ObjectController {
 		}
 	}
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
+	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.create'))")
 	@RequestMapping(method = RequestMethod.POST, value = "/bulk/{db}/{collection}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Bulk import of objects from a CSV file", notes = "Bulk import of objects from a CSV file")
 	@ResponseBody
@@ -336,7 +336,7 @@ public class ObjectController {
 		}
 	}
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection)) or (#db == 'settings')")
+	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.create')) or (#db == 'settings')")
 	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Create object with id", notes = "Create object with id")
 	@ApiResponses(value = {
@@ -375,7 +375,7 @@ public class ObjectController {
 		}
 	}
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection)) or (#db == 'settings')")
+	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.update')) or (#db == 'settings')")
 	@RequestMapping(method = RequestMethod.PUT, value = "/{db}/{collection}/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Update object", notes = "Update object")
 	@ApiResponses(value = {
@@ -432,7 +432,7 @@ public class ObjectController {
 		}
 	}
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection)) or (#db == 'settings')")
+	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.delete')) or (#db == 'settings')")
 	@RequestMapping(method = RequestMethod.DELETE, value = "/{db}/{collection}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Delete object", notes = "Delete object")
 	@ApiResponses(value = {
@@ -488,7 +488,7 @@ public class ObjectController {
 		}
 	}
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
+	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.delete'))")
 	@RequestMapping(method = RequestMethod.DELETE, value = "/{db}/{collection}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Delete collection", notes = "Delete collection")
 	@ApiResponses(value = {
@@ -533,7 +533,7 @@ public class ObjectController {
 		}
 	}
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
+	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.read'))")
 	@RequestMapping(method = RequestMethod.GET, value = "/{db}/{collection}/search", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Search object(s) using query parameters", notes = "Search object(s) in a specific collection using URL parameters instead of POST payloads (as FIND does)")
 	@ApiResponses(value = {
@@ -574,7 +574,7 @@ public class ObjectController {
 		}
 	}
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
+	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.read'))")
 	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}/find", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Find object(s)", notes = "Uses MongoDB's find method to  object(s)")
 	@ApiResponses(value = {
@@ -646,7 +646,7 @@ public class ObjectController {
 		return json;
 	}
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
+	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.read'))")
 	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}/aggregate", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Mongo Aggregate", notes = "Uses MongoDB's Aggregate method to calculate aggregate values in a collection")
 	@ApiResponses(value = {
@@ -703,7 +703,7 @@ public class ObjectController {
 		}
 	}
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
+	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.read'))")
 	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}/count", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Count object(s)", notes = "Uses MongoDB's Count method to count object(s) in a collection")
 	@ApiResponses(value = {
@@ -749,7 +749,7 @@ public class ObjectController {
 		}
 	}
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
+	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.read'))")
 	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}/distinct/{field}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Get distinct values from a specified field", notes = "Uses MongoDB's distinct method to get the distinct values for a specified field across a single collection")
 	@ApiResponses(value = {

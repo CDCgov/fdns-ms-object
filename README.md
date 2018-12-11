@@ -78,7 +78,7 @@ exit
 
 This microservice is configurable to be secured with an OAuth 2 provider.
 
-__Scopes__: This application uses the following scope: `object.database.collection`
+__Scopes__: This application uses the following scope syntax: `fdns.object.{database}.{collection}.{create|read|update|delete}`. Example: `fdns.object.mydatabase.mycollection.read`
 
 Please see the following environment variables for configuring with your OAuth 2 provider:
 

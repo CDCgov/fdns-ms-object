@@ -35,7 +35,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 					"mongo.username=",
 					"mongo.password=",
 					"immutable=",
-					"proxy.hostname=localhost",
+					"proxy.hostname=",
 					"security.oauth2.resource.user-info-uri=",
 					"security.oauth2.protected=",
 					"security.oauth2.client.client-id=",

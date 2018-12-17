@@ -33,6 +33,7 @@
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Djava.security.egd=file:/dev/./urandom"/>
 <stringAttribute key="process_factory_id" value="org.springframework.ide.eclipse.boot.launch.process.BootProcessFactory"/>
 <booleanAttribute key="spring.boot.ansi.console" value="false"/>
+<stringAttribute key="spring.boot.app.properties" value=""/>
 <booleanAttribute key="spring.boot.dash.hidden" value="false"/>
 <booleanAttribute key="spring.boot.debug.enable" value="false"/>
 <booleanAttribute key="spring.boot.fast.startup" value="true"/>

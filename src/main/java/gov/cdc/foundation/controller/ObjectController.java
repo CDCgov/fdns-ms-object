@@ -94,9 +94,20 @@ public class ObjectController {
 		}
 	}
 
-
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection)) or (#db == 'settings')")
-	@RequestMapping(method = RequestMethod.GET, value = "/{db}/{collection}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize(
+		"!@authz.isSecured()"
+		+ " or (#db == 'settings')"
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.read'))"
+		+ " or #oauth2.hasScope('fdns.object.*.'.concat(#collection).concat('.read'))"
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.*').concat('.read'))"
+		+ " or #oauth2.hasScope('fdns.object.*.*.read')" 
+		+ " or #oauth2.hasScope('fdns.object.*.*.*')"
+	)
+	@RequestMapping(
+		method = RequestMethod.GET,
+		value = "/{db}/{collection}/{id}",
+		produces = MediaType.APPLICATION_JSON_VALUE
+	)
 	@ApiOperation(value = "Get object", notes = "Get object")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Returns object"),
@@ -106,8 +117,11 @@ public class ObjectController {
 			@ApiResponse(code = 404, message = "Object not found in collection")
 	})
 	@ResponseBody
-	public ResponseEntity<?> getObject(@ApiParam(value = "Database name") @PathVariable(value = "db") String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection, @ApiParam(value = "Object Id") @PathVariable(value = "id") String id) {
-
+	public ResponseEntity<?> getObject(
+		@ApiParam(value = "Database name") @PathVariable(value = "db") String db,
+		@ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection,
+		@ApiParam(value = "Object Id") @PathVariable(value = "id") String id
+	) {
 		Map<String, Object> log = MessageHelper.initializeLog(MessageHelper.METHOD_GETOBJECT, db, collection);
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -145,8 +159,21 @@ public class ObjectController {
 		}
 	}
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection)) or (#db == 'settings')")
-	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize(
+		"!@authz.isSecured()"
+		+ " or (#db == 'settings')"
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.create'))"
+		+ " or #oauth2.hasScope('fdns.object.*.'.concat(#collection).concat('.create'))"
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.*').concat('.create'))"
+		+ " or #oauth2.hasScope('fdns.object.*.*.create')"
+		+ " or #oauth2.hasScope('fdns.object.*.*.*')"
+	)
+	@RequestMapping(
+		method = RequestMethod.POST,
+		value = "/{db}/{collection}",
+		produces = MediaType.APPLICATION_JSON_VALUE,
+		consumes = MediaType.APPLICATION_JSON_VALUE
+	)
 	@ApiOperation(value = "Create object", notes = "Create object")
 	@ApiResponses(value = {
 			@ApiResponse(code = 201, message = "Returns object that was just created"),
@@ -157,8 +184,11 @@ public class ObjectController {
 			@ApiResponse(code = 413, message = "Request payload too large")
 	})
 	@ResponseBody
-	public ResponseEntity<?> createObject(@RequestBody String payload, @ApiParam(value = "Database name") @PathVariable(value = "db", required = true) String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection", required = true) String collection) {
-
+	public ResponseEntity<?> createObject(
+		@RequestBody String payload,
+		@ApiParam(value = "Database name") @PathVariable(value = "db", required = true) String db,
+		@ApiParam(value = "Collection name") @PathVariable(value = "collection", required = true) String collection
+	) {
 		Map<String, Object> log = MessageHelper.initializeLog(MessageHelper.METHOD_CREATEOBJECT, db, collection);
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -176,7 +206,15 @@ public class ObjectController {
 		}
 	}
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection)) or (#db == 'settings')")
+	@PreAuthorize(
+		"!@authz.isSecured()"
+		+ " or (#db == 'settings')"
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.read'))"
+		+ " or #oauth2.hasScope('fdns.object.*.'.concat(#collection).concat('.read'))"
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.*').concat('.read'))"
+		+ " or #oauth2.hasScope('fdns.object.*.*.read')" 
+		+ " or #oauth2.hasScope('fdns.object.*.*.*')"
+	)
 	@RequestMapping(method = RequestMethod.GET, value = "/{db}/{collection}/", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Get all objects in a collection", notes = "Get all objects in a collection")
 	@ApiResponses(value = {
@@ -187,8 +225,10 @@ public class ObjectController {
 			@ApiResponse(code = 404, message = "Collection not found in the specified database")
 	})
 	@ResponseBody
-	public ResponseEntity<?> getCollection(@ApiParam(value = "Database name") @PathVariable(value = "db") String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection) {
-
+	public ResponseEntity<?> getCollection(
+		@ApiParam(value = "Database name") @PathVariable(value = "db") String db,
+		@ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection
+	) {
 		Map<String, Object> log = MessageHelper.initializeLog(MessageHelper.METHOD_GETCOLLECTION, db, collection);
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -217,8 +257,21 @@ public class ObjectController {
 		}
 	}
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection)) or (#db == 'settings')")
-	@RequestMapping(method = RequestMethod.POST, value = "/multi/{db}/{collection}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize(
+		"!@authz.isSecured()"
+		+ " or (#db == 'settings')"
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.create'))"
+		+ " or #oauth2.hasScope('fdns.object.*.'.concat(#collection).concat('.create'))"
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.*').concat('.create'))"
+		+ " or #oauth2.hasScope('fdns.object.*.*.create')" 
+		+ " or #oauth2.hasScope('fdns.object.*.*.*')"
+	)
+	@RequestMapping(
+		method = RequestMethod.POST,
+		value = "/multi/{db}/{collection}",
+		produces = MediaType.APPLICATION_JSON_VALUE,
+		consumes = MediaType.APPLICATION_JSON_VALUE
+	)
 	@ApiOperation(value = "Create a list of objects", notes = "Create a list of objects")
 	@ApiResponses(value = {
 			@ApiResponse(code = 201, message = "Returns ids of created objects"),
@@ -229,8 +282,11 @@ public class ObjectController {
 			@ApiResponse(code = 413, message = "Request payload too large")
 	})
 	@ResponseBody
-	public ResponseEntity<?> createObjects(@ApiParam(value = "Array of JSON objects") @RequestBody String payload, @ApiParam(value = "Database name") @PathVariable(value = "db", required = true) String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection", required = true) String collection) {
-
+	public ResponseEntity<?> createObjects(
+		@ApiParam(value = "Array of JSON objects") @RequestBody String payload,
+		@ApiParam(value = "Database name") @PathVariable(value = "db", required = true) String db,
+		@ApiParam(value = "Collection name") @PathVariable(value = "collection", required = true) String collection
+	) {
 		Map<String, Object> log = MessageHelper.initializeLog(MessageHelper.METHOD_CREATEOBJECTS, db, collection);
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -263,7 +319,14 @@ public class ObjectController {
 		}
 	}
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
+	@PreAuthorize(
+		"!@authz.isSecured()"
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.create'))"
+		+ " or #oauth2.hasScope('fdns.object.*.'.concat(#collection).concat('.create'))"
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.*').concat('.create'))"
+		+ " or #oauth2.hasScope('fdns.object.*.*.create')" 
+		+ " or #oauth2.hasScope('fdns.object.*.*.*')"
+	)
 	@RequestMapping(method = RequestMethod.POST, value = "/bulk/{db}/{collection}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Bulk import of objects from a CSV file", notes = "Bulk import of objects from a CSV file")
 	@ResponseBody
@@ -275,9 +338,13 @@ public class ObjectController {
 			@ApiResponse(code = 404, message = "Not Found"),
 			@ApiResponse(code = 413, message = "Request payload too large")
 	})
-    //TODO: CSV files do not return 413 if too large
-	public ResponseEntity<?> bulkImport(@ApiParam(value = "CSV file") @RequestParam("csv") MultipartFile csvFile, @ApiParam(value = "Database name") @PathVariable(value = "db", required = true) String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection", required = true) String collection, @ApiParam(value = "CSV format", allowableValues="Default,Excel,MySQL,RFC4180,TDF", defaultValue="Default") @RequestParam(value = "csvFormat", required = true) String csvFormat) {
-
+  // TODO: CSV files do not return 413 if too large
+	public ResponseEntity<?> bulkImport(
+		@ApiParam(value = "CSV file") @RequestParam("csv") MultipartFile csvFile,
+		@ApiParam(value = "Database name") @PathVariable(value = "db", required = true) String db,
+		@ApiParam(value = "Collection name") @PathVariable(value = "collection", required = true) String collection,
+		@ApiParam(value = "CSV format", allowableValues="Default,Excel,MySQL,RFC4180,TDF", defaultValue="Default") @RequestParam(value = "csvFormat", required = true) String csvFormat
+	) {
 		Map<String, Object> log = MessageHelper.initializeLog(MessageHelper.METHOD_BULKIMPORT, db, collection);
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -336,8 +403,21 @@ public class ObjectController {
 		}
 	}
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection)) or (#db == 'settings')")
-	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize(
+		"!@authz.isSecured()"
+		+ " or (#db == 'settings')"
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.create'))"
+		+ " or #oauth2.hasScope('fdns.object.*.'.concat(#collection).concat('.create'))"
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.*').concat('.create'))"
+		+ " or #oauth2.hasScope('fdns.object.*.*.create')"
+		+ " or #oauth2.hasScope('fdns.object.*.*.*')"
+	)
+	@RequestMapping(
+		method = RequestMethod.POST,
+		value = "/{db}/{collection}/{id}",
+		produces = MediaType.APPLICATION_JSON_VALUE,
+		consumes = MediaType.APPLICATION_JSON_VALUE
+	)
 	@ApiOperation(value = "Create object with id", notes = "Create object with id")
 	@ApiResponses(value = {
 			@ApiResponse(code = 201, message = "Returns object that was just created"),
@@ -348,8 +428,12 @@ public class ObjectController {
 			@ApiResponse(code = 413, message = "Request payload too large")
 	})
 	@ResponseBody
-	public ResponseEntity<?> createObjectWithId(@RequestBody String payload, @ApiParam(value = "Database name") @PathVariable(value = "db") String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection, @ApiParam(value = "Object Id") @PathVariable(value = "id") String id) {
-
+	public ResponseEntity<?> createObjectWithId(
+		@RequestBody String payload,
+		@ApiParam(value = "Database name") @PathVariable(value = "db") String db,
+		@ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection,
+		@ApiParam(value = "Object Id") @PathVariable(value = "id") String id
+	) {
 		Map<String, Object> log = MessageHelper.initializeLog(MessageHelper.METHOD_CREATEOBJECT, db, collection);
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -375,8 +459,21 @@ public class ObjectController {
 		}
 	}
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection)) or (#db == 'settings')")
-	@RequestMapping(method = RequestMethod.PUT, value = "/{db}/{collection}/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize(
+		"!@authz.isSecured()"
+		+ " or (#db == 'settings')"
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.update'))"
+		+ " or #oauth2.hasScope('fdns.object.*.'.concat(#collection).concat('.update'))"
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.*').concat('.update'))"
+		+ " or #oauth2.hasScope('fdns.object.*.*.update')"
+		+ " or #oauth2.hasScope('fdns.object.*.*.*')"
+	)
+	@RequestMapping(
+		method = RequestMethod.PUT,
+		value = "/{db}/{collection}/{id}",
+		produces = MediaType.APPLICATION_JSON_VALUE,
+		consumes = MediaType.APPLICATION_JSON_VALUE
+	)
 	@ApiOperation(value = "Update object", notes = "Update object")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Returns object that was just updated"),
@@ -387,8 +484,12 @@ public class ObjectController {
 			@ApiResponse(code = 413, message = "Request payload too large")
 	})
 	@ResponseBody
-	public ResponseEntity<?> updateObject(@RequestBody @ApiParam(value = "Payload") String payload, @ApiParam(value = "Database name") @PathVariable(value = "db") String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection, @ApiParam(value = "Object Id") @PathVariable(value = "id") String id) {
-
+	public ResponseEntity<?> updateObject(
+		@RequestBody @ApiParam(value = "Payload") String payload,
+		@ApiParam(value = "Database name") @PathVariable(value = "db") String db,
+		@ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection,
+		@ApiParam(value = "Object Id") @PathVariable(value = "id") String id
+	) {
 		Map<String, Object> log = MessageHelper.initializeLog(MessageHelper.METHOD_UPDATEOBJECT, db, collection);
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -432,7 +533,15 @@ public class ObjectController {
 		}
 	}
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection)) or (#db == 'settings')")
+	@PreAuthorize(
+		"!@authz.isSecured()"
+		+ " or (#db == 'settings')"
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.delete'))"
+		+ " or #oauth2.hasScope('fdns.object.*.'.concat(#collection).concat('.delete'))"
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.*').concat('.delete'))"
+		+ " or #oauth2.hasScope('fdns.object.*.*.delete')"
+		+ " or #oauth2.hasScope('fdns.object.*.*.*')"
+	)
 	@RequestMapping(method = RequestMethod.DELETE, value = "/{db}/{collection}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Delete object", notes = "Delete object")
 	@ApiResponses(value = {
@@ -443,8 +552,11 @@ public class ObjectController {
                     @ApiResponse(code = 404, message = "Object with this id not found in the collection or collection does not exist")
 				})
 	@ResponseBody
-	public ResponseEntity<?> deleteObject(@ApiParam(value = "Database name") @PathVariable(value = "db") String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection, @ApiParam(value = "Object Id") @PathVariable(value = "id") String id) {
-
+	public ResponseEntity<?> deleteObject(
+		@ApiParam(value = "Database name") @PathVariable(value = "db") String db,
+		@ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection,
+		@ApiParam(value = "Object Id") @PathVariable(value = "id") String id
+	) {
 		Map<String, Object> log = MessageHelper.initializeLog(MessageHelper.METHOD_DELETEOBJECT, db, collection);
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -488,7 +600,14 @@ public class ObjectController {
 		}
 	}
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
+	@PreAuthorize(
+		"!@authz.isSecured()" 
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.delete'))"
+		+ " or #oauth2.hasScope('fdns.object.*.'.concat(#collection).concat('.delete'))"
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.*').concat('.delete'))"
+		+ " or #oauth2.hasScope('fdns.object.*.*.delete')"
+		+ " or #oauth2.hasScope('fdns.object.*.*.*')"
+	)
 	@RequestMapping(method = RequestMethod.DELETE, value = "/{db}/{collection}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Delete collection", notes = "Delete collection")
 	@ApiResponses(value = {
@@ -499,8 +618,10 @@ public class ObjectController {
 			@ApiResponse(code = 404, message = "Collection not found in database")
 	})
 	@ResponseBody
-	public ResponseEntity<?> deleteCollection(@ApiParam(value = "Database name") @PathVariable(value = "db") String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection) {
-
+	public ResponseEntity<?> deleteCollection(
+		@ApiParam(value = "Database name") @PathVariable(value = "db") String db,
+		@ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection
+	) {
 		Map<String, Object> log = MessageHelper.initializeLog(MessageHelper.METHOD_DELETECOLLECTION, db, collection);
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -533,9 +654,23 @@ public class ObjectController {
 		}
 	}
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
-	@RequestMapping(method = RequestMethod.GET, value = "/{db}/{collection}/search", produces = MediaType.APPLICATION_JSON_VALUE)
-	@ApiOperation(value = "Search object(s) using query parameters", notes = "Search object(s) in a specific collection using URL parameters instead of POST payloads (as FIND does)")
+	@PreAuthorize(
+		"!@authz.isSecured()"
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.read'))"
+		+ " or #oauth2.hasScope('fdns.object.*.'.concat(#collection).concat('.read'))"
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.*').concat('.read'))"
+		+ " or #oauth2.hasScope('fdns.object.*.*.read')"
+		+ " or #oauth2.hasScope('fdns.object.*.*.*')"
+	)
+	@RequestMapping(
+		method = RequestMethod.GET,
+		value = "/{db}/{collection}/search",
+		produces = MediaType.APPLICATION_JSON_VALUE
+	)
+	@ApiOperation(
+		value = "Search object(s) using query parameters",
+		notes = "Search object(s) in a specific collection using URL parameters instead of POST payloads (as FIND does)"
+	)
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Returns success boolean"),
 			@ApiResponse(code = 400, message = "Route parameters or json payload contain invalid data"),
@@ -574,8 +709,20 @@ public class ObjectController {
 		}
 	}
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
-	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}/find", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize(
+		"!@authz.isSecured()" 
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.read'))"
+		+ " or #oauth2.hasScope('fdns.object.*.'.concat(#collection).concat('.read'))"
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.*').concat('.read'))"
+		+ " or #oauth2.hasScope('fdns.object.*.*.read')"
+		+ " or #oauth2.hasScope('fdns.object.*.*.*')"
+	)
+	@RequestMapping(
+		method = RequestMethod.POST,
+		value = "/{db}/{collection}/find",
+		produces = MediaType.APPLICATION_JSON_VALUE,
+		consumes = MediaType.APPLICATION_JSON_VALUE
+	)
 	@ApiOperation(value = "Find object(s)", notes = "Uses MongoDB's find method to  object(s)")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Returns all objects in specified collection"),
@@ -618,7 +765,14 @@ public class ObjectController {
 		}
 	}
 
-	private JSONObject executeQuery(MongoCollection<Document> coll, Document query, int from, int size, String sort, int order) throws ServiceException {
+	private JSONObject executeQuery(
+		MongoCollection<Document> coll,
+		Document query,
+		int from,
+		int size,
+		String sort,
+		int order
+	) throws ServiceException {
 		JSONArray results = new JSONArray();
 		JSONObject json = new JSONObject();
 
@@ -646,8 +800,20 @@ public class ObjectController {
 		return json;
 	}
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
-	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}/aggregate", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize(
+		"!@authz.isSecured()"
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.read'))"
+		+ " or #oauth2.hasScope('fdns.object.*.'.concat(#collection).concat('.read'))"
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.*').concat('.read'))"
+		+ " or #oauth2.hasScope('fdns.object.*.*.read')"
+		+ " or #oauth2.hasScope('fdns.object.*.*.*')"
+	)
+	@RequestMapping(
+		method = RequestMethod.POST,
+		value = "/{db}/{collection}/aggregate",
+		produces = MediaType.APPLICATION_JSON_VALUE,
+		consumes = MediaType.APPLICATION_JSON_VALUE
+	)
 	@ApiOperation(value = "Mongo Aggregate", notes = "Uses MongoDB's Aggregate method to calculate aggregate values in a collection")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Returns all objects in specified collection"),
@@ -658,8 +824,11 @@ public class ObjectController {
 			@ApiResponse(code = 413, message = "Request payload too large")
 	})
 	@ResponseBody
-	public ResponseEntity<?> aggregate(@RequestBody String payload, @ApiParam(value = "Database name") @PathVariable(value = "db") String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection) {
-
+	public ResponseEntity<?> aggregate(
+		@RequestBody String payload,
+		@ApiParam(value = "Database name") @PathVariable(value = "db") String db,
+		@ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection
+	) {
 		Map<String, Object> log = MessageHelper.initializeLog(MessageHelper.METHOD_AGGREGATE, db, collection);
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -703,8 +872,20 @@ public class ObjectController {
 		}
 	}
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
-	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}/count", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize(
+		"!@authz.isSecured()"
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.read'))"
+		+ " or #oauth2.hasScope('fdns.object.*.'.concat(#collection).concat('.read'))"
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.*').concat('.read'))"
+		+ " or #oauth2.hasScope('fdns.object.*.*.read')"
+		+ " or #oauth2.hasScope('fdns.object.*.*.*')"
+	)
+	@RequestMapping(
+		method = RequestMethod.POST,
+		value = "/{db}/{collection}/count",
+		produces = MediaType.APPLICATION_JSON_VALUE,
+		consumes = MediaType.APPLICATION_JSON_VALUE
+	)
 	@ApiOperation(value = "Count object(s)", notes = "Uses MongoDB's Count method to count object(s) in a collection")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Returns number of objects in collection"),
@@ -715,8 +896,11 @@ public class ObjectController {
 			@ApiResponse(code = 413, message = "Request payload too large")
 	})
 	@ResponseBody
-	public ResponseEntity<?> count(@RequestBody String payload, @ApiParam(value = "Database name") @PathVariable(value = "db") String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection) {
-
+	public ResponseEntity<?> count(
+		@RequestBody String payload,
+		@ApiParam(value = "Database name") @PathVariable(value = "db") String db,
+		@ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection
+	) {
 		Map<String, Object> log = MessageHelper.initializeLog(MessageHelper.METHOD_COUNT, db, collection);
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -749,9 +933,24 @@ public class ObjectController {
 		}
 	}
 
-	@PreAuthorize("!@authz.isSecured() or #oauth2.hasScope('object.'.concat(#db).concat('.').concat(#collection))")
-	@RequestMapping(method = RequestMethod.POST, value = "/{db}/{collection}/distinct/{field}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	@ApiOperation(value = "Get distinct values from a specified field", notes = "Uses MongoDB's distinct method to get the distinct values for a specified field across a single collection")
+	@PreAuthorize(
+		"!@authz.isSecured()"
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.').concat(#collection).concat('.read'))"
+		+ " or #oauth2.hasScope('fdns.object.*.'.concat(#collection).concat('.read'))"
+		+ " or #oauth2.hasScope('fdns.object.'.concat(#db).concat('.*').concat('.read'))"
+		+ " or #oauth2.hasScope('fdns.object.*.*.read')"
+		+ " or #oauth2.hasScope('fdns.object.*.*.*')"
+	)
+	@RequestMapping(
+		method = RequestMethod.POST,
+		value = "/{db}/{collection}/distinct/{field}",
+		produces = MediaType.APPLICATION_JSON_VALUE,
+		consumes = MediaType.APPLICATION_JSON_VALUE
+	)
+	@ApiOperation(
+		value = "Get distinct values from a specified field",
+		notes = "Uses MongoDB's distinct method to get the distinct values for a specified field across a single collection"
+	)
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Returns list of distinct values"),
 			@ApiResponse(code = 400, message = "Route parameters or json payload contain invalid data"),
@@ -761,8 +960,12 @@ public class ObjectController {
 			@ApiResponse(code = 413, message = "Request entity too large")
 	})
 	@ResponseBody
-	public ResponseEntity<?> distinct(@RequestBody String payload, @ApiParam(value = "Database name") @PathVariable(value = "db") String db, @ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection, @ApiParam(value = "Field name") @PathVariable(value = "field") String field) {
-
+	public ResponseEntity<?> distinct(
+		@RequestBody String payload,
+		@ApiParam(value = "Database name") @PathVariable(value = "db") String db,
+		@ApiParam(value = "Collection name") @PathVariable(value = "collection") String collection,
+		@ApiParam(value = "Field name") @PathVariable(value = "field") String field
+	) {
 		Map<String, Object> log = MessageHelper.initializeLog(MessageHelper.METHOD_DISTINCT, db, collection);
 		ObjectMapper mapper = new ObjectMapper();
 

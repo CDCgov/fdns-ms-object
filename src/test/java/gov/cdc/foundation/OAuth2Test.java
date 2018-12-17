@@ -42,7 +42,7 @@ import org.springframework.boot.web.server.LocalServerPort;
 public class OAuth2Test {
 
 	@LocalServerPort
-  private int port;
+	private int port;
 
 	@Autowired
 	private TestRestTemplate restTemplate;
